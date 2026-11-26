@@ -72,16 +72,15 @@ namespace {
     // ---------------------------------------------------------------------------
 
     struct Command {
-        std::string name; // "AUTH", "SUBSCRIBE", ...
-        std::string arg;  // premier argument
-        std::string rest; // le reste de la ligne (le mot de passe peut contenir des espaces)
+        std::string name;  // "AUTH", "SUBSCRIBE", ...
+        std::string arg;   // premier argument
+        std::string value; // le reste de la ligne jsqu'au prochain espace
     };
 
     Command parse_command(const std::string &line) {
         std::istringstream is(line);
         Command cmd;
-        is >> cmd.name >> cmd.arg;
-        std::getline(is >> std::ws, cmd.rest);
+        is >> cmd.name >> cmd.arg >> cmd.value;
         return cmd;
     }
 
@@ -335,7 +334,7 @@ namespace {
 
         // AUTH <user> <password> : Unauthenticated -> Authenticated
         void on_auth(Client &c, const Command &cmd) {
-            if (users_.check(cmd.arg, cmd.rest)) {
+            if (users_.check(cmd.arg, cmd.value)) {
                 c.state = State::Authenticated;
                 c.reply("OK");
                 log(c.peer + " authentifie en tant que '" + cmd.arg + "'");
